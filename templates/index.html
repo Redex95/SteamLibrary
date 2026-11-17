@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steam Library Explorer</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#16202a;--mut:#5d6b78;--line:#d9e0e6;--acc:#0b7285;--ok:#2b8a3e;--lim:#b7791f;--no:#c92a2a;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#12181e;--card:#1b232b;--ink:#e6ebf0;--mut:#93a1ae;--line:#2d3945;--acc:#3bc9db;--ok:#69db7c;--lim:#ffd43b;--no:#ff8787;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header,main{max-width:1180px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:8px 0 2px}
+p.sub{margin:0;color:var(--mut)}
+section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
+h2{font-size:1rem;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mut)}
+input,select,button{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+button{cursor:pointer;background:var(--acc);color:#fff;border-color:transparent;font-weight:600}
+button.sec{background:transparent;color:var(--acc);border-color:var(--acc)}
+button:disabled{opacity:.5;cursor:wait}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.note{font-size:.82rem;color:var(--mut);margin:0 0 10px}
+#status{color:var(--mut)} .err{color:var(--no)} .warn{color:var(--lim)}
+.steps{display:flex;gap:6px;list-style:none;padding:0;margin:14px 0 8px;flex-wrap:wrap}
+.steps li{padding:3px 10px;border-radius:99px;font-size:.82rem;border:1px solid var(--line);color:var(--mut)}
+.steps li.done{color:var(--ok);border-color:var(--ok)}
+.steps li.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.steps li.skip{text-decoration:line-through;opacity:.6}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s}
+.bar.indet i{width:35%;animation:slide 1.2s ease-in-out infinite alternate}
+@keyframes slide{from{margin-left:0}to{margin-left:65%}}
+@media(prefers-reduced-motion:reduce){.bar.indet i{animation:none;margin-left:0}}
+.detail{margin-top:8px;font-size:.88rem;color:var(--mut);font-variant-numeric:tabular-nums}
+.hint{font-size:.8rem;color:var(--acc)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:.85rem;color:var(--mut)}
+.chip b{display:block;font-size:1.15rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.chip.main{border-color:var(--acc)}.chip.main b{color:var(--acc);font-size:1.5rem}
+.g{display:grid;grid-template-columns:120px 1fr auto;gap:12px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
+.g img{width:120px;height:45px;object-fit:cover;border-radius:4px;background:var(--line)}
+.g b{display:block}.g small{color:var(--mut)}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.78rem;border:1px solid currentColor;white-space:nowrap}
+.ok{color:var(--ok)}.limit{color:var(--lim)}.no{color:var(--no)}.unknown{color:var(--mut)}
+.score{text-align:right;min-width:110px}
+@media(max-width:600px){.g{grid-template-columns:80px 1fr}.g img{width:80px;height:30px}.score{grid-column:1/-1;text-align:left}}
+</style></head><body>
+<header><h1>Steam Library Explorer</h1>
+<p class="sub">Libreria personale e famiglia, filtri, e ordinamento in base a quanto pesano per il tuo PC.</p></header>
+<main>
+<section><h2>1. Collega Steam</h2>
+<p class="note">Chiavi, token e specifiche del PC restano salvati solo in questo browser. Il server le riceve per chiamare Steam e non le memorizza.</p>
+<div class="grid">
+<label>API key<input id="key" type="password" autocomplete="off">
+<a class="hint" href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noopener">Ottieni la API key su Steam (serve il login)</a></label>
+<label>SteamID64<input id="sid" placeholder="7656119...">
+<a class="hint" href="https://steamid.io" target="_blank" rel="noopener">Trova il tuo SteamID64 su steamid.io</a></label>
+<label>Token web (opzionale, per la famiglia)<input id="tok" type="password" autocomplete="off">
+<a class="hint" href="https://store.steampowered.com/pointssummary/ajaxgetasyncconfig" target="_blank" rel="noopener">Apri la pagina Steam del token e copia il valore di webapi_token</a></label>
+</div>
+<div class="row"><button id="sync">Sincronizza</button><button id="resume" class="sec" hidden>Completa i requisiti mancanti</button><button id="wipe" class="sec">Cancella dati salvati</button><span id="status"></span></div>
+<div id="loader" hidden>
+<ol class="steps" id="steps"></ol>
+<div class="bar" id="bar"><i id="fill"></i></div>
+<div id="detail" class="detail"></div>
+</div>
+<div id="msg" class="row"></div></section>
+
+<section><h2>2. Il tuo PC</h2>
+<div class="grid">
+<label>CPU<input id="cpu" placeholder="es. Ryzen 7 7700"></label>
+<label>GPU<input id="gpu" placeholder="es. RX 7800 XT"></label>
+<label>RAM (GB)<input id="ram" type="number" min="1" placeholder="es. 32"></label>
+</div><div id="gpuinfo" class="chips"></div></section>
+
+<section><h2>3. Filtri</h2>
+<div class="grid">
+<label>Cerca<input id="q" placeholder="nome gioco"></label>
+<label>Quali giochi<select id="scope"><option value="all">Miei e famiglia</option><option value="mine">Solo miei</option><option value="family_only">Solo famiglia (non miei)</option></select></label>
+<label>Proprietario<select id="owner"><option value="">Tutti</option></select></label>
+<label>Ore minime<input id="hmin" type="number" min="0" step="0.5"></label>
+<label>Ore massime<input id="hmax" type="number" min="0" step="0.5"></label>
+<label>Compatibilità col PC<select id="fit"><option value="all">Tutte</option><option value="ok">Gira bene</option><option value="limit">Al limite</option><option value="no">Troppo pesante</option><option value="unknown">Non determinabile</option></select></label>
+<label>Ordina per<select id="sort"><option value="demand_desc">Più esigenti prima</option><option value="demand_asc">Meno esigenti prima</option><option value="hours_desc">Più ore giocate</option><option value="hours_asc">Meno ore giocate</option><option value="name">Nome</option></select></label>
+</div>
+<div class="row"><button id="dl">Scarica JSON</button><button id="cp" class="sec">Copia JSON</button><span id="count" style="color:var(--mut)"></span></div></section>
+
+<section><div id="list"><p style="color:var(--mut)">Nessun gioco ancora. Sincronizza per iniziare.</p></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clean=v=>(v||'').trim().replace(/^[\s"'`“”‘’]+|[\s"'`“”‘’]+$/g,'');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const LS='steamlib.settings.v1', PCK='steamlib.pc.v1';
+const FIELDS=['key','sid','tok','cpu','gpu','ram'];
+const FIT=[1.0,1.25], CFIT=[1.3,1.8];          // soglie GPU e CPU (richiesto / tuo)
+const RATE_N=190, RATE_PER=300000, BATCH=5, WORKERS=2;
+let lib=null, details={}, PC={}, busy=false, S={phase:'',status:''}, tick=null, lastRender=0, pauseUntil=0;
+const win=[];
+
+/* ---------- salvataggio in localStorage, libreria in IndexedDB ---------- */
+function saveSettings(){try{const o={};FIELDS.forEach(f=>o[f]=$(f).value);localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
+function loadSettings(){try{const o=JSON.parse(localStorage.getItem(LS)||'{}');FIELDS.forEach(f=>{if(o[f]!=null)$(f).value=o[f]})}catch(e){}}
+const mem={};
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('steamlib',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function dbGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return mem[k]}}
+async function dbSet(k,v){mem[k]=v;try{const db=await idb();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}}
+async function dbClear(){Object.keys(mem).forEach(k=>delete mem[k]);try{const db=await idb();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').clear();t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}}
+
+FIELDS.forEach(f=>{
+  $(f).addEventListener('input',saveSettings);
+  $(f).addEventListener('change',()=>{$(f).value=clean($(f).value);saveSettings()});
+});
+
+/* ---------- rete ---------- */
+async function post(url,body){
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let d={};try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(d.error||('Errore '+r.status));
+  return d;
+}
+function prune(){const n=Date.now();while(win.length&&n-win[0]>RATE_PER)win.shift()}
+async function acquire(k){            // finestra scorrevole: max RATE_N richieste ogni 5 minuti
+  for(;;){
+    prune();const n=Date.now();
+    if(n<pauseUntil){await sleep(Math.min(pauseUntil-n,1000));continue}
+    if(win.length+k<=RATE_N){for(let i=0;i<k;i++)win.push(n);return}
+    await sleep(Math.min(Math.max(win[0]+RATE_PER-n,50),1000));
+  }
+}
+const etaFor=rem=>{prune();return Math.round(Math.max(0,rem-Math.max(0,RATE_N-win.length))*RATE_PER/1000/RATE_N)};
+const limited=()=>{prune();return Date.now()<pauseUntil||win.length+BATCH>RATE_N};
+
+/* ---------- sincronizzazione ---------- */
+async function syncLibrary(){
+  const key=clean($('key').value), sid=clean($('sid').value), tok=clean($('tok').value);
+  if(!key||!sid)throw new Error('Servono API key e SteamID64.');
+  const o=await post('/api/owned',{api_key:key,steam_id:sid});
+  const games={};
+  for(const g of o.games)games[g.appid]={appid:g.appid,name:g.name,mine:true,family:false,hours:g.hours,owners:[sid]};
+  if(!o.games.length)S.warning='La libreria personale è vuota: controlla che i dettagli dei giochi siano pubblici.';
+  if(tok){
+    S.phase='famiglia';renderLoader();
+    try{
+      const f=await post('/api/family',{token:tok,steam_id:sid});
+      for(const a of f.apps){
+        const g=games[a.appid];
+        if(g){g.owners=[...new Set([...g.owners,...a.owners])];g.family=true}
+        else games[a.appid]={appid:a.appid,name:a.name,mine:false,family:true,hours:null,owners:a.owners};
+      }
+    }catch(e){S.warning='Libreria famiglia non scaricata (token scaduto o non valido?): '+e.message}
+  }
+  S.phase='giocatori';renderLoader();
+  const ids=[...new Set([sid,...Object.values(games).flatMap(g=>g.owners)])], names={};
+  try{
+    for(let i=0;i<ids.length;i+=100)Object.assign(names,(await post('/api/players',{api_key:key,ids:ids.slice(i,i+100)})).names);
+  }catch(e){S.warning=(S.warning?S.warning+' ':'')+'Nomi dei proprietari non recuperati: '+e.message}
+  ids.forEach(i=>{if(!names[i])names[i]=i});
+  lib={games:Object.values(games),owners:names,me:sid,syncedAt:new Date().toLocaleString('it-IT')};
+  await dbSet('library',lib);
+  render();
+}
+
+async function fetchDetails(){
+  const todo=lib.games.filter(g=>!details[g.appid]).sort((a,b)=>(b.mine-a.mine)||a.name.localeCompare(b.name));
+  const total=lib.games.length, base=total-todo.length;
+  Object.assign(S,{phase:'requisiti',total,done:base,eta:etaFor(todo.length)});
+  const queue=todo.slice();
+  let done=0,failed=0,streak=0,lastSave=0,stop=false;
+  const worker=async()=>{
+    while(queue.length&&!stop){
+      const batch=queue.splice(0,BATCH);
+      await acquire(batch.length);
+      let res;
+      try{res=(await post('/api/details',{appids:batch.map(g=>g.appid)})).results}
+      catch(e){failed+=batch.length;done+=batch.length;continue}
+      const retry=[];
+      for(const g of batch){
+        const r=res[g.appid];
+        if(!r||r.fail){failed++;done++}
+        else if(r.rate)retry.push(g);
+        else{details[g.appid]=r;done++;streak=0}
+      }
+      if(retry.length){
+        if(++streak>5){stop=true;failed+=retry.length;done+=retry.length}
+        else{queue.unshift(...retry);pauseUntil=Date.now()+60000}
+      }
+      Object.assign(S,{done:base+done,eta:etaFor(queue.length),current:batch[batch.length-1].name});
+      if(done-lastSave>=25){lastSave=done;dbSet('details',details)}
+    }
+  };
+  await Promise.all(Array.from({length:WORKERS},worker));
+  await dbSet('details',details);
+  S.phase='fine';S.eta=0;S.current='';
+  S.status=`Completato: ${total} giochi.`+(failed?` ${failed} requisiti non scaricati (rete o limite di Steam): premi "Completa i requisiti mancanti" per riprovare.`:'');
+}
+
+async function run(kind){
+  if(busy)return;
+  busy=true;
+  S={phase:kind==='sync'?'libreria':'requisiti',skipFamily:kind==='sync'&&!clean($('tok').value),done:0,total:0,eta:null,current:'',started:Date.now(),endedAt:0,error:'',warning:'',status:''};
+  tick=setInterval(()=>{renderLoader();if(Date.now()-lastRender>8000)render()},1000);
+  renderLoader();
+  try{if(kind==='sync')await syncLibrary();await fetchDetails()}
+  catch(e){S.phase='errore';S.error=e.message;S.status='Sincronizzazione fallita.'}
+  finally{busy=false;S.endedAt=Date.now();clearInterval(tick);render();renderLoader()}
+}
+
+/* ---------- punteggio del PC (tabelle sul server) ---------- */
+let pcTimer;
+function schedulePC(){clearTimeout(pcTimer);pcTimer=setTimeout(refreshPC,400)}
+async function refreshPC(){
+  const g=clean($('gpu').value), c=clean($('cpu').value);
+  if(!g&&!c)PC={forGpu:g,forCpu:c};
+  else{try{PC={...(await post('/api/pc',{gpu:g,cpu:c})),forGpu:g,forCpu:c}}catch(e){return}}
+  try{localStorage.setItem(PCK,JSON.stringify(PC))}catch(e){}
+  render();
+}
+
+/* ---------- filtri, punteggi e verdetti ---------- */
+const level=(req,mine,ok,lim)=>{if(req==null||!mine)return 0;const r=req/mine;return r<=ok?0:r<=lim?1:2};
+const r1=x=>Math.round(x*10)/10;
+const num=(k,desc)=>(a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return desc?y-x:x-y};
+function compute(){
+  const myRam=parseFloat($('ram').value)||null, gS=PC.gpu_score??null, cS=PC.cpu_score??null;
+  const build=r1((gS||0)+0.5*(cS||0)+1.5*(myRam||0));
+  const q=$('q').value.trim().toLowerCase(), scope=$('scope').value, owner=$('owner').value, fit=$('fit').value, sort=$('sort').value;
+  const hmin=$('hmin').value===''?null:+$('hmin').value, hmax=$('hmax').value===''?null:+$('hmax').value;
+  const rows=[];
+  for(const g of (lib?lib.games:[])){
+    if(q&&!g.name.toLowerCase().includes(q))continue;
+    if(scope==='mine'&&!g.mine)continue;
+    if(scope==='family_only'&&g.mine)continue;
+    if(owner&&!g.owners.includes(owner))continue;
+    if(hmin!=null&&(g.hours||0)<hmin)continue;
+    if(hmax!=null&&(g.hours||0)>hmax)continue;
+    const d=details[g.appid]||{};
+    const gs=d.gpu_score??null, cs=d.cpu_score??null, ram=d.ram??null;
+    const demand=(gs!=null||cs!=null||ram!=null)?r1((gs||0)+0.5*(cs||0)+1.5*(ram||0)):null;
+    let verdict='unknown', why=[];
+    if(gS&&demand!=null){
+      const lv={GPU:level(gs,gS,...FIT),CPU:level(cs,cS,...CFIT),RAM:(myRam&&ram!=null&&ram>myRam)?2:0};
+      const w=Math.max(...Object.values(lv));
+      verdict=['ok','limit','no'][w];why=w>0?Object.keys(lv).filter(k=>lv[k]===w):[];
+    }
+    if(fit!=='all'&&verdict!==fit)continue;
+    rows.push({appid:g.appid,name:g.name,mine:g.mine,family:g.family,hours:g.hours,owners:g.owners.map(o=>lib.owners[o]||o),
+      gpu:d.gpu||null,cpu:d.cpu||null,ram,storage:d.storage??null,demand,fit:verdict,why,type:d.type||null,
+      req_min:d.req_min||'',req_rec:d.req_rec||''});
+  }
+  if(sort==='demand_desc')rows.sort(num('demand',true));
+  else if(sort==='demand_asc')rows.sort(num('demand',false));
+  else if(sort==='hours_desc')rows.sort(num('hours',true));
+  else if(sort==='hours_asc')rows.sort(num('hours',false));
+  else rows.sort((a,b)=>a.name.localeCompare(b.name));
+  return {rows,build,myRam};
+}
+
+/* ---------- interfaccia ---------- */
+const LBL={ok:'Gira bene',limit:'Al limite',no:'Troppo pesante',unknown:'N/D'};
+let rt;function schedule(){clearTimeout(rt);rt=setTimeout(render,250)}
+['q','scope','owner','hmin','hmax','fit','sort','ram'].forEach(i=>$(i).addEventListener('input',schedule));
+['gpu','cpu'].forEach(i=>$(i).addEventListener('input',schedulePC));
+
+function render(){
+  lastRender=Date.now();
+  const {rows,build,myRam}=compute();
+  if(lib){
+    const cur=$('owner').value;
+    $('owner').innerHTML='<option value="">Tutti</option>'+Object.entries(lib.owners).map(([id,n])=>`<option value="${esc(id)}">${esc(n)}${id===lib.me?' (io)':''}</option>`).join('');
+    $('owner').value=cur;
+  }
+  const chip=(t,v,sub,cls='')=>`<div class="chip ${cls}">${t}<b>${v}</b>${sub}</div>`;
+  $('gpuinfo').innerHTML=(PC.gpu_label||PC.cpu_label||myRam)
+    ?chip('Punteggio build',build,'GPU + ½ CPU + 1,5 × RAM','main')
+      +chip('GPU',PC.gpu_score??'?',PC.gpu_label?esc(PC.gpu_label):'non riconosciuta')
+      +chip('CPU',PC.cpu_score??'?',PC.cpu_label?esc(PC.cpu_label):'non riconosciuta')
+      +chip('RAM',myRam?myRam+' GB':'?','')
+    :'<span style="color:var(--mut)">Inserisci GPU, CPU e RAM per calcolare il punteggio e la compatibilità.</span>';
+  $('count').textContent=lib?`${rows.length} giochi su ${lib.games.length}`:'';
+  $('list').innerHTML=rows.length?rows.map(g=>`
+  <div class="g"><img loading="lazy" src="https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/capsule_184x69.jpg" alt="">
+  <div><b><a href="https://store.steampowered.com/app/${g.appid}" target="_blank" rel="noopener" style="color:inherit">${esc(g.name)}</a></b>
+  <small>${g.mine?'Mio':'Famiglia'} · ${g.hours==null?'ore n/d':g.hours+' h'} · ${esc(g.owners.join(', '))}</small><br>
+  <small>${g.gpu?'GPU '+esc(g.gpu):'GPU n/d'} · ${g.cpu?'CPU '+esc(g.cpu):'CPU n/d'} · ${g.ram?g.ram+' GB RAM':'RAM n/d'}${g.storage?' · '+g.storage+' GB':''}</small></div>
+  <div class="score"><span class="tag ${g.fit}">${LBL[g.fit]}</span><br><small>esigenza ${g.demand??'n/d'}</small>${g.why.length?`<br><small>limite: ${g.why.join(', ')}</small>`:''}</div></div>`).join('')
+    :`<p style="color:var(--mut)">${lib?'Nessun gioco corrisponde ai filtri.':'Nessun gioco ancora. Sincronizza per iniziare.'}</p>`;
+  const missing=lib?lib.games.filter(g=>!details[g.appid]).length:0;
+  $('resume').hidden=busy||!missing;
+  $('resume').textContent=`Completa i requisiti mancanti (${missing})`;
+}
+
+const PH=[['libreria','Libreria'],['famiglia','Famiglia'],['giocatori','Giocatori'],['requisiti','Requisiti']];
+const PHT={libreria:'Scarico la libreria personale…',famiglia:'Scarico la libreria famiglia…',giocatori:'Recupero i nomi dei proprietari…'};
+const mmss=n=>{n=Math.max(0,Math.round(n));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
+function renderLoader(){
+  $('sync').disabled=busy;$('resume').disabled=busy;
+  $('msg').innerHTML=(S.error?`<span class="err">${esc(S.error)}</span>`:'')+(S.warning?`<span class="warn">${esc(S.warning)}</span>`:'');
+  let st=S.status;
+  if(busy)st=S.phase==='requisiti'?(limited()?`Scarico i requisiti di sistema: ${S.done}/${S.total} (pausa per il limite di Steam)`:`Scarico i requisiti di sistema: ${S.done}/${S.total}`):(PHT[S.phase]||'');
+  $('status').textContent=st;
+  $('loader').hidden=!S.phase;
+  if(!S.phase)return;
+  const idx=PH.findIndex(p=>p[0]===S.phase), fin=S.phase==='fine';
+  $('steps').innerHTML=PH.map((p,i)=>{
+    let c=fin||i<idx?'done':i===idx?'active':'';
+    if(p[0]==='famiglia'&&S.skipFamily)c='skip';
+    return `<li class="${c}">${p[1]}</li>`}).join('');
+  const det=S.phase==='requisiti'||fin;
+  $('bar').classList.toggle('indet',busy&&!det);
+  const pct=fin?100:(S.total?S.done/S.total*100:0);
+  $('fill').style.width=(busy&&!det?'':pct+'%');
+  let t=`Trascorso ${mmss(((S.endedAt||Date.now())-S.started)/1000)}`;
+  if(det&&S.total)t=`${S.done}/${S.total} giochi (${Math.floor(pct)}%) · `+t+(busy&&S.eta!=null?` · mancano circa ${mmss(S.eta)}`:'');
+  if(busy&&S.current)t+=` · ora: ${S.current}`;
+  $('detail').textContent=S.phase==='errore'?'':t;
+}
+
+/* ---------- esportazione JSON per le AI ---------- */
+function exportText(){
+  const {rows,build,myRam}=compute();
+  const filtri={};['q','scope','owner','hmin','hmax','fit','sort'].forEach(i=>{const v=$(i).value.trim();if(v)filtri[i]=v});
+  return JSON.stringify({
+    descrizione:'Libreria Steam (personale + famiglia) con requisiti di sistema. punteggio_esigenza = punteggio GPU (RX 7800 XT = 100) + 0.5*punteggio CPU (Ryzen 7 7700 = 100) + 1.5*RAM_GB; è confrontabile con pc.punteggio_build, calcolato allo stesso modo. compatibilita: ok / limit / no / unknown rispetto al PC indicato; limite_da indica il componente che pesa di più.',
+    pc:{cpu:clean($('cpu').value),cpu_riconosciuta:PC.cpu_label||null,cpu_punteggio_relativo:PC.cpu_score??null,
+        gpu:clean($('gpu').value),gpu_riconosciuta:PC.gpu_label||null,gpu_punteggio_relativo:PC.gpu_score??null,
+        ram_gb:myRam,punteggio_build:build},
+    filtri,totale:rows.length,
+    giochi:rows.map(r=>({appid:r.appid,nome:r.name,mio:r.mine,in_famiglia:r.family,ore_giocate:r.hours,proprietari:r.owners,tipo:r.type,
+      gpu_richiesta:r.gpu,cpu_richiesta:r.cpu,limite_da:r.why,ram_gb_richiesta:r.ram,spazio_gb:r.storage,
+      punteggio_esigenza:r.demand,compatibilita:r.fit,requisiti_minimi:r.req_min,requisiti_consigliati:r.req_rec,
+      url:'https://store.steampowered.com/app/'+r.appid}))
+  },null,2);
+}
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([exportText()],{type:'application/json'}));a.download='steam_giochi.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('cp').onclick=async()=>{try{await navigator.clipboard.writeText(exportText());$('cp').textContent='Copiato'}catch(e){$('cp').textContent='Copia non riuscita'}setTimeout(()=>$('cp').textContent='Copia JSON',1500)};
+$('sync').onclick=()=>run('sync');
+$('resume').onclick=()=>run('resume');
+$('wipe').onclick=async()=>{
+  if(!confirm('Cancellare chiavi, token, specifiche del PC e libreria salvati in questo browser?'))return;
+  try{localStorage.removeItem(LS);localStorage.removeItem(PCK)}catch(e){}
+  await dbClear();
+  FIELDS.forEach(f=>$(f).value='');
+  lib=null;details={};PC={};S={phase:'',status:'Dati cancellati.'};
+  render();renderLoader();
+};
+
+/* ---------- avvio: ricarica quello che è già salvato, nessun sync necessario ---------- */
+(async()=>{
+  loadSettings();
+  try{lib=(await dbGet('library'))||null;details=(await dbGet('details'))||{}}catch(e){}
+  try{PC=JSON.parse(localStorage.getItem(PCK)||'{}')}catch(e){PC={}}
+  S.status=lib?`Libreria caricata dal browser: ${lib.games.length} giochi (ultimo sync: ${lib.syncedAt}).`:'Inserisci i tuoi dati e premi Sincronizza.';
+  if((PC.forGpu||'')!==clean($('gpu').value)||(PC.forCpu||'')!==clean($('cpu').value))refreshPC();
+  render();renderLoader();
+})();
+</script></body></html>
