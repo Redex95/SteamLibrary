@@ -2,14 +2,19 @@
 <html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Steam Library Explorer</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--ink:#16202a;--mut:#5d6b78;--line:#d9e0e6;--acc:#0b7285;--ok:#2b8a3e;--lim:#b7791f;--no:#c92a2a;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#12181e;--card:#1b232b;--ink:#e6ebf0;--mut:#93a1ae;--line:#2d3945;--acc:#3bc9db;--ok:#69db7c;--lim:#ffd43b;--no:#ff8787;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 header,main{max-width:1180px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 h1{font-size:1.5rem;margin:8px 0 2px}
 p.sub{margin:0;color:var(--mut)}
+.gh{color:var(--mut);display:inline-flex;padding:6px;border-radius:6px}
+.gh:hover{color:var(--ink)}
+.gh svg{width:26px;height:26px;fill:currentColor}
 section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
 h2{font-size:1rem;margin:0 0 10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
@@ -38,16 +43,29 @@ button:disabled{opacity:.5;cursor:wait}
 .chip{border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:.85rem;color:var(--mut)}
 .chip b{display:block;font-size:1.15rem;color:var(--ink);font-variant-numeric:tabular-nums}
 .chip.main{border-color:var(--acc)}.chip.main b{color:var(--acc);font-size:1.5rem}
+fieldset.checks{grid-column:1/-1;border:0;margin:0;padding:0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+fieldset.checks legend{font-size:.85rem;color:var(--mut);padding:0;margin-bottom:4px;float:left;margin-right:12px}
+.checks label{flex-direction:row;align-items:center;gap:6px;color:var(--ink);font-size:.9rem}
+.checks input{padding:0;width:auto}
 .g{display:grid;grid-template-columns:120px 1fr auto;gap:12px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
 .g img{width:120px;height:45px;object-fit:cover;border-radius:4px;background:var(--line)}
 .g b{display:block}.g small{color:var(--mut)}
 .tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.78rem;border:1px solid currentColor;white-space:nowrap}
 .ok{color:var(--ok)}.limit{color:var(--lim)}.no{color:var(--no)}.unknown{color:var(--mut)}
 .score{text-align:right;min-width:110px}
-@media(max-width:600px){.g{grid-template-columns:80px 1fr}.g img{width:80px;height:30px}.score{grid-column:1/-1;text-align:left}}
+.pick{display:grid;grid-template-columns:minmax(0,230px) 1fr;gap:16px;align-items:center}
+.pick img{width:100%;border-radius:6px;background:var(--line)}
+.pick h3{margin:0 0 4px;font-size:1.15rem}
+.pick p{margin:2px 0;color:var(--mut);font-size:.9rem}
+@media(max-width:600px){.g{grid-template-columns:80px 1fr}.g img{width:80px;height:30px}.score{grid-column:1/-1;text-align:left}.pick{grid-template-columns:1fr}}
 </style></head><body>
-<header><h1>Steam Library Explorer</h1>
-<p class="sub">Libreria personale e famiglia, filtri, e ordinamento in base a quanto pesano per il tuo PC.</p></header>
+<header>
+<div><h1>Steam Library Explorer</h1>
+<p class="sub">Libreria personale e famiglia, filtri, e ordinamento in base a quanto pesano per il tuo PC.</p></div>
+<a class="gh" href="https://github.com/TUO-USERNAME" target="_blank" rel="noopener" aria-label="Il mio GitHub" title="GitHub">
+<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+</a>
+</header>
 <main>
 <section><h2>1. Collega Steam</h2>
 <p class="note">Chiavi, token e specifiche del PC restano salvati solo in questo browser. Il server le riceve per chiamare Steam e non le memorizza.</p>
@@ -59,7 +77,7 @@ button:disabled{opacity:.5;cursor:wait}
 <label>Token web (opzionale, per la famiglia)<input id="tok" type="password" autocomplete="off">
 <a class="hint" href="https://store.steampowered.com/pointssummary/ajaxgetasyncconfig" target="_blank" rel="noopener">Apri la pagina Steam del token e copia il valore di webapi_token</a></label>
 </div>
-<div class="row"><button id="sync">Sincronizza</button><button id="resume" class="sec" hidden>Completa i requisiti mancanti</button><button id="wipe" class="sec">Cancella dati salvati</button><span id="status"></span></div>
+<div class="row"><button id="sync">Sincronizza</button><button id="resume" class="sec" hidden>Completa i dati mancanti</button><button id="wipe" class="sec">Cancella dati salvati</button><span id="status"></span></div>
 <div id="loader" hidden>
 <ol class="steps" id="steps"></ol>
 <div class="bar" id="bar"><i id="fill"></i></div>
@@ -81,26 +99,49 @@ button:disabled{opacity:.5;cursor:wait}
 <label>Proprietario<select id="owner"><option value="">Tutti</option></select></label>
 <label>Ore minime<input id="hmin" type="number" min="0" step="0.5"></label>
 <label>Ore massime<input id="hmax" type="number" min="0" step="0.5"></label>
-<label>Compatibilità col PC<select id="fit"><option value="all">Tutte</option><option value="ok">Gira bene</option><option value="limit">Al limite</option><option value="no">Troppo pesante</option><option value="unknown">Non determinabile</option></select></label>
-<label>Ordina per<select id="sort"><option value="demand_desc">Più esigenti prima</option><option value="demand_asc">Meno esigenti prima</option><option value="hours_desc">Più ore giocate</option><option value="hours_asc">Meno ore giocate</option><option value="name">Nome</option></select></label>
+<label>Ultimo avvio<select id="last">
+<option value="all">Qualsiasi</option>
+<option value="never">Mai giocati (compresi quelli della famiglia)</option>
+<option value="recent">Giocati negli ultimi 30 giorni</option>
+<option value="old">Non giocati da più di un anno</option></select></label>
+<label>Genere<select id="genre"><option value="">Tutti</option></select></label>
+<label>Modalità<select id="mode">
+<option value="">Tutte</option><option value="single">Single player</option><option value="multi">Multiplayer</option>
+<option value="coop">Co-op</option><option value="online_coop">Co-op online</option><option value="local_coop">Co-op locale / schermo condiviso</option><option value="pvp">PvP</option></select></label>
+<label>Controller<select id="ctrl"><option value="">Indifferente</option><option value="full">Supporto completo</option><option value="any">Completo o parziale</option></select></label>
+<label>Ordina per<select id="sort">
+<option value="demand_desc">Più esigenti prima</option><option value="demand_asc">Meno esigenti prima</option>
+<option value="hours_desc">Più ore giocate</option><option value="hours_asc">Meno ore giocate</option>
+<option value="last_desc">Ultimo avvio: più recente</option><option value="last_asc">Ultimo avvio: più vecchio</option>
+<option value="name">Nome</option></select></label>
+<fieldset class="checks"><legend>Mostra i giochi che per il tuo PC sono</legend>
+<label><input type="checkbox" id="fit_ok" checked> Gira bene</label>
+<label><input type="checkbox" id="fit_limit" checked> Al limite</label>
+<label><input type="checkbox" id="fit_no" checked> Troppo pesante</label>
+<label><input type="checkbox" id="fit_unknown" checked> Non determinabile</label>
+</fieldset>
 </div>
-<div class="row"><button id="dl">Scarica JSON</button><button id="cp" class="sec">Copia JSON</button><span id="count" style="color:var(--mut)"></span></div></section>
+<div class="row"><button id="pick">Scegli per me</button><button id="dl" class="sec">Scarica JSON</button><button id="cp" class="sec">Copia JSON</button><span id="count" style="color:var(--mut)"></span></div></section>
+
+<section id="pickbox" hidden><h2>Ti consiglio di giocare a…</h2><div id="pickbody"></div>
+<div class="row"><button id="again" class="sec">Un altro</button><button id="closepick" class="sec">Chiudi</button></div></section>
 
 <section><div id="list"><p style="color:var(--mut)">Nessun gioco ancora. Sincronizza per iniziare.</p></div></section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// Toglie spazi e virgolette attorno al valore: "1234" -> 1234, "" -> vuoto
 const clean=v=>(v||'').trim().replace(/^[\s"'`“”‘’]+|[\s"'`“”‘’]+$/g,'');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const LS='steamlib.settings.v1', PCK='steamlib.pc.v1';
 const FIELDS=['key','sid','tok','cpu','gpu','ram'];
 const FIT=[1.0,1.25], CFIT=[1.3,1.8];          // soglie GPU e CPU (richiesto / tuo)
-const RATE_N=190, RATE_PER=300000, BATCH=5, WORKERS=2;
-let lib=null, details={}, PC={}, busy=false, S={phase:'',status:''}, tick=null, lastRender=0, pauseUntil=0;
+const RATE_N=190, RATE_PER=300000, BATCH=5, WORKERS=2, DATA_V=3, DAY=864e5;
+let lib=null, details={}, PC={}, busy=false, S={phase:'',status:''}, tick=null, lastRender=0, pauseUntil=0, lastPick=null;
 const win=[];
 
-/* ---------- salvataggio in localStorage, libreria in IndexedDB ---------- */
+/* ---------- salvataggio: impostazioni in localStorage, libreria in IndexedDB ---------- */
 function saveSettings(){try{const o={};FIELDS.forEach(f=>o[f]=$(f).value);localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
 function loadSettings(){try{const o=JSON.parse(localStorage.getItem(LS)||'{}');FIELDS.forEach(f=>{if(o[f]!=null)$(f).value=o[f]})}catch(e){}}
 const mem={};
@@ -134,13 +175,17 @@ const etaFor=rem=>{prune();return Math.round(Math.max(0,rem-Math.max(0,RATE_N-wi
 const limited=()=>{prune();return Date.now()<pauseUntil||win.length+BATCH>RATE_N};
 
 /* ---------- sincronizzazione ---------- */
+const stale=g=>((details[g.appid]||{}).v||0)<DATA_V;    // dati assenti o scaricati con una versione precedente
+
 async function syncLibrary(){
   const key=clean($('key').value), sid=clean($('sid').value), tok=clean($('tok').value);
   if(!key||!sid)throw new Error('Servono API key e SteamID64.');
+  const old=lib;
   const o=await post('/api/owned',{api_key:key,steam_id:sid});
   const games={};
-  for(const g of o.games)games[g.appid]={appid:g.appid,name:g.name,mine:true,family:false,hours:g.hours,owners:[sid]};
+  for(const g of o.games)games[g.appid]={appid:g.appid,name:g.name,mine:true,family:false,hours:g.hours,last:g.last_played||0,owners:[sid]};
   if(!o.games.length)S.warning='La libreria personale è vuota: controlla che i dettagli dei giochi siano pubblici.';
+  let famOk=false;
   if(tok){
     S.phase='famiglia';renderLoader();
     try{
@@ -148,23 +193,34 @@ async function syncLibrary(){
       for(const a of f.apps){
         const g=games[a.appid];
         if(g){g.owners=[...new Set([...g.owners,...a.owners])];g.family=true}
-        else games[a.appid]={appid:a.appid,name:a.name,mine:false,family:true,hours:null,owners:a.owners};
+        else games[a.appid]={appid:a.appid,name:a.name,mine:false,family:true,hours:null,last:0,owners:a.owners};
       }
+      famOk=true;
     }catch(e){S.warning='Libreria famiglia non scaricata (token scaduto o non valido?): '+e.message}
+  }
+  if(!famOk&&old&&old.me===sid&&old.games.some(g=>g.family)){
+    // senza token valido tengo i dati famiglia dell'ultimo sync invece di perderli
+    for(const g of old.games){
+      if(!g.family)continue;
+      const n=games[g.appid];
+      if(n){n.family=true;n.owners=[...new Set([...n.owners,...g.owners])]}
+      else games[g.appid]={...g};
+    }
+    S.warning=(S.warning?S.warning+' ':'')+"Per la famiglia uso i dati dell'ultimo sync.";
   }
   S.phase='giocatori';renderLoader();
   const ids=[...new Set([sid,...Object.values(games).flatMap(g=>g.owners)])], names={};
   try{
     for(let i=0;i<ids.length;i+=100)Object.assign(names,(await post('/api/players',{api_key:key,ids:ids.slice(i,i+100)})).names);
   }catch(e){S.warning=(S.warning?S.warning+' ':'')+'Nomi dei proprietari non recuperati: '+e.message}
-  ids.forEach(i=>{if(!names[i])names[i]=i});
+  ids.forEach(i=>{if(!names[i])names[i]=(old&&old.owners&&old.owners[i])||i});
   lib={games:Object.values(games),owners:names,me:sid,syncedAt:new Date().toLocaleString('it-IT')};
   await dbSet('library',lib);
   render();
 }
 
 async function fetchDetails(){
-  const todo=lib.games.filter(g=>!details[g.appid]).sort((a,b)=>(b.mine-a.mine)||a.name.localeCompare(b.name));
+  const todo=lib.games.filter(stale).sort((a,b)=>(b.mine-a.mine)||a.name.localeCompare(b.name));
   const total=lib.games.length, base=total-todo.length;
   Object.assign(S,{phase:'requisiti',total,done:base,eta:etaFor(todo.length)});
   const queue=todo.slice();
@@ -194,7 +250,7 @@ async function fetchDetails(){
   await Promise.all(Array.from({length:WORKERS},worker));
   await dbSet('details',details);
   S.phase='fine';S.eta=0;S.current='';
-  S.status=`Completato: ${total} giochi.`+(failed?` ${failed} requisiti non scaricati (rete o limite di Steam): premi "Completa i requisiti mancanti" per riprovare.`:'');
+  S.status=`Completato: ${total} giochi.`+(failed?` ${failed} non scaricati (rete o limite di Steam): premi "Completa i dati mancanti" per riprovare.`:'');
 }
 
 async function run(kind){
@@ -223,12 +279,15 @@ async function refreshPC(){
 const level=(req,mine,ok,lim)=>{if(req==null||!mine)return 0;const r=req/mine;return r<=ok?0:r<=lim?1:2};
 const r1=x=>Math.round(x*10)/10;
 const num=(k,desc)=>(a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return desc?y-x:x-y};
+const FITS=['ok','limit','no','unknown'];
 function compute(){
   const myRam=parseFloat($('ram').value)||null, gS=PC.gpu_score??null, cS=PC.cpu_score??null;
   const build=r1((gS||0)+0.5*(cS||0)+1.5*(myRam||0));
-  const q=$('q').value.trim().toLowerCase(), scope=$('scope').value, owner=$('owner').value, fit=$('fit').value, sort=$('sort').value;
+  const q=$('q').value.trim().toLowerCase(), scope=$('scope').value, owner=$('owner').value, sort=$('sort').value;
+  const lastF=$('last').value, genre=$('genre').value, mode=$('mode').value, ctrl=$('ctrl').value;
+  const fits=new Set(FITS.filter(k=>$('fit_'+k).checked));
   const hmin=$('hmin').value===''?null:+$('hmin').value, hmax=$('hmax').value===''?null:+$('hmax').value;
-  const rows=[];
+  const now=Date.now(), rows=[];
   for(const g of (lib?lib.games:[])){
     if(q&&!g.name.toLowerCase().includes(q))continue;
     if(scope==='mine'&&!g.mine)continue;
@@ -236,17 +295,26 @@ function compute(){
     if(owner&&!g.owners.includes(owner))continue;
     if(hmin!=null&&(g.hours||0)<hmin)continue;
     if(hmax!=null&&(g.hours||0)>hmax)continue;
-    const d=details[g.appid]||{};
+    const played=(g.hours||0)>0, last=g.last>0?g.last:null;
+    if(lastF==='never'&&played)continue;
+    if(lastF==='recent'&&!(last&&now-last*1000<30*DAY))continue;
+    if(lastF==='old'&&!(played&&last&&now-last*1000>365*DAY))continue;
+    const d=details[g.appid]||{}, tags=d.tags||[], genres=d.genres||[];
+    if(genre&&!genres.includes(genre))continue;
+    if(mode&&!tags.includes(mode))continue;
+    if(ctrl==='full'&&!tags.includes('controller'))continue;
+    if(ctrl==='any'&&!(tags.includes('controller')||tags.includes('controller_partial')))continue;
     const gs=d.gpu_score??null, cs=d.cpu_score??null, ram=d.ram??null;
     const demand=(gs!=null||cs!=null||ram!=null)?r1((gs||0)+0.5*(cs||0)+1.5*(ram||0)):null;
     let verdict='unknown', why=[];
     if(gS&&demand!=null){
       const lv={GPU:level(gs,gS,...FIT),CPU:level(cs,cS,...CFIT),RAM:(myRam&&ram!=null&&ram>myRam)?2:0};
       const w=Math.max(...Object.values(lv));
-      verdict=['ok','limit','no'][w];why=w>0?Object.keys(lv).filter(k=>lv[k]===w):[];
+      verdict=FITS[w];why=w>0?Object.keys(lv).filter(k=>lv[k]===w):[];
     }
-    if(fit!=='all'&&verdict!==fit)continue;
-    rows.push({appid:g.appid,name:g.name,mine:g.mine,family:g.family,hours:g.hours,owners:g.owners.map(o=>lib.owners[o]||o),
+    if(!fits.has(verdict))continue;
+    rows.push({appid:g.appid,name:g.name,mine:g.mine,family:g.family,hours:g.hours,last,played,
+      owners:g.owners.map(o=>lib.owners[o]||o),genres,tags,
       gpu:d.gpu||null,cpu:d.cpu||null,ram,storage:d.storage??null,demand,fit:verdict,why,type:d.type||null,
       req_min:d.req_min||'',req_rec:d.req_rec||''});
   }
@@ -254,23 +322,35 @@ function compute(){
   else if(sort==='demand_asc')rows.sort(num('demand',false));
   else if(sort==='hours_desc')rows.sort(num('hours',true));
   else if(sort==='hours_asc')rows.sort(num('hours',false));
+  else if(sort==='last_desc')rows.sort(num('last',true));
+  else if(sort==='last_asc')rows.sort(num('last',false));
   else rows.sort((a,b)=>a.name.localeCompare(b.name));
   return {rows,build,myRam};
 }
 
 /* ---------- interfaccia ---------- */
 const LBL={ok:'Gira bene',limit:'Al limite',no:'Troppo pesante',unknown:'N/D'};
+const TAGTXT={single:'Single player',multi:'Multiplayer',coop:'Co-op',online_coop:'Co-op online',local_coop:'Co-op locale',pvp:'PvP',controller:'Controller',controller_partial:'Controller parziale'};
+const fmtDate=s=>new Date(s*1000).toLocaleDateString('it-IT');
+const lastTxt=g=>g.last?'ultimo avvio '+fmtDate(g.last):(g.mine?(g.played?'ultimo avvio n/d':'mai giocato'):'');
 let rt;function schedule(){clearTimeout(rt);rt=setTimeout(render,250)}
-['q','scope','owner','hmin','hmax','fit','sort','ram'].forEach(i=>$(i).addEventListener('input',schedule));
+['q','scope','owner','hmin','hmax','sort','ram','last','genre','mode','ctrl'].forEach(i=>$(i).addEventListener('input',schedule));
+FITS.forEach(k=>$('fit_'+k).addEventListener('change',schedule));
 ['gpu','cpu'].forEach(i=>$(i).addEventListener('input',schedulePC));
+
+function fillSelect(id,items,placeholder){
+  const cur=$(id).value;
+  $(id).innerHTML=`<option value="">${placeholder}</option>`+items.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join('');
+  $(id).value=cur;
+}
 
 function render(){
   lastRender=Date.now();
   const {rows,build,myRam}=compute();
   if(lib){
-    const cur=$('owner').value;
-    $('owner').innerHTML='<option value="">Tutti</option>'+Object.entries(lib.owners).map(([id,n])=>`<option value="${esc(id)}">${esc(n)}${id===lib.me?' (io)':''}</option>`).join('');
-    $('owner').value=cur;
+    fillSelect('owner',Object.entries(lib.owners).map(([id,n])=>[id,n+(id===lib.me?' (io)':'')]),'Tutti');
+    const gs=[...new Set(Object.values(details).flatMap(d=>d.genres||[]))].sort((a,b)=>a.localeCompare(b));
+    fillSelect('genre',gs.map(x=>[x,x]),'Tutti');
   }
   const chip=(t,v,sub,cls='')=>`<div class="chip ${cls}">${t}<b>${v}</b>${sub}</div>`;
   $('gpuinfo').innerHTML=(PC.gpu_label||PC.cpu_label||myRam)
@@ -280,26 +360,57 @@ function render(){
       +chip('RAM',myRam?myRam+' GB':'?','')
     :'<span style="color:var(--mut)">Inserisci GPU, CPU e RAM per calcolare il punteggio e la compatibilità.</span>';
   $('count').textContent=lib?`${rows.length} giochi su ${lib.games.length}`:'';
-  $('list').innerHTML=rows.length?rows.map(g=>`
+  $('list').innerHTML=rows.length?rows.map(g=>{
+    const feat=[g.genres.slice(0,3).join(', '),...g.tags.map(t=>TAGTXT[t]).filter(Boolean)].filter(Boolean).join(' · ');
+    return `
   <div class="g"><img loading="lazy" src="https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/capsule_184x69.jpg" alt="">
   <div><b><a href="https://store.steampowered.com/app/${g.appid}" target="_blank" rel="noopener" style="color:inherit">${esc(g.name)}</a></b>
-  <small>${g.mine?'Mio':'Famiglia'} · ${g.hours==null?'ore n/d':g.hours+' h'} · ${esc(g.owners.join(', '))}</small><br>
-  <small>${g.gpu?'GPU '+esc(g.gpu):'GPU n/d'} · ${g.cpu?'CPU '+esc(g.cpu):'CPU n/d'} · ${g.ram?g.ram+' GB RAM':'RAM n/d'}${g.storage?' · '+g.storage+' GB':''}</small></div>
-  <div class="score"><span class="tag ${g.fit}">${LBL[g.fit]}</span><br><small>esigenza ${g.demand??'n/d'}</small>${g.why.length?`<br><small>limite: ${g.why.join(', ')}</small>`:''}</div></div>`).join('')
+  <small>${g.mine?'Mio':'Famiglia'} · ${g.hours==null?'ore n/d':g.hours+' h'}${lastTxt(g)?' · '+lastTxt(g):''} · ${esc(g.owners.join(', '))}</small><br>
+  <small>${g.gpu?'GPU '+esc(g.gpu):'GPU n/d'} · ${g.cpu?'CPU '+esc(g.cpu):'CPU n/d'} · ${g.ram?g.ram+' GB RAM':'RAM n/d'}${g.storage?' · '+g.storage+' GB':''}</small>
+  ${feat?`<br><small>${esc(feat)}</small>`:''}</div>
+  <div class="score"><span class="tag ${g.fit}">${LBL[g.fit]}</span><br><small>esigenza ${g.demand??'n/d'}</small>${g.why.length?`<br><small>limite: ${g.why.join(', ')}</small>`:''}</div></div>`}).join('')
     :`<p style="color:var(--mut)">${lib?'Nessun gioco corrisponde ai filtri.':'Nessun gioco ancora. Sincronizza per iniziare.'}</p>`;
-  const missing=lib?lib.games.filter(g=>!details[g.appid]).length:0;
+  const missing=lib?lib.games.filter(stale).length:0;
   $('resume').hidden=busy||!missing;
-  $('resume').textContent=`Completa i requisiti mancanti (${missing})`;
+  $('resume').textContent=`Completa i dati mancanti (${missing})`;
 }
 
-const PH=[['libreria','Libreria'],['famiglia','Famiglia'],['giocatori','Giocatori'],['requisiti','Requisiti']];
+/* ---------- Scegli per me ---------- */
+function showPick(c,n){
+  $('pickbox').hidden=false;
+  $('again').hidden=!c||n<2;
+  if(!c){
+    $('pickbody').innerHTML='<p style="color:var(--mut)">Nessun gioco mai giocato che giri bene (o al limite) con i filtri attuali. Controlla i filtri e la compatibilità selezionata.</p>';
+    return;
+  }
+  const feat=[c.genres.slice(0,3).join(', '),...c.tags.map(t=>TAGTXT[t]).filter(Boolean)].filter(Boolean).join(' · ');
+  $('pickbody').innerHTML=`<div class="pick"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${c.appid}/header.jpg" alt="">
+  <div><h3><a href="https://store.steampowered.com/app/${c.appid}" target="_blank" rel="noopener" style="color:inherit">${esc(c.name)}</a></h3>
+  <p><span class="tag ${c.fit}">${LBL[c.fit]}</span> esigenza ${c.demand??'n/d'}</p>
+  <p>${c.mine?'Tuo':'Della famiglia'} · mai giocato · ${esc(c.owners.join(', '))}</p>
+  ${feat?`<p>${esc(feat)}</p>`:''}
+  <p>${c.gpu?'GPU '+esc(c.gpu):'GPU n/d'} · ${c.cpu?'CPU '+esc(c.cpu):'CPU n/d'} · ${c.ram?c.ram+' GB RAM':'RAM n/d'}</p>
+  <p>Scelto tra ${n} ${n===1?'gioco':'giochi'} che rispettano i filtri.</p></div></div>`;
+}
+function pickOne(){
+  const pool=compute().rows.filter(r=>!r.played&&(r.fit==='ok'||r.fit==='limit'));
+  if(!pool.length){showPick(null,0);return}
+  let c;do{c=pool[Math.floor(Math.random()*pool.length)]}while(pool.length>1&&c.appid===lastPick);
+  lastPick=c.appid;showPick(c,pool.length);
+  $('pickbox').scrollIntoView({block:'nearest'});
+}
+$('pick').onclick=pickOne;
+$('again').onclick=pickOne;
+$('closepick').onclick=()=>{$('pickbox').hidden=true};
+
+const PH=[['libreria','Libreria'],['famiglia','Famiglia'],['giocatori','Giocatori'],['requisiti','Requisiti e dettagli']];
 const PHT={libreria:'Scarico la libreria personale…',famiglia:'Scarico la libreria famiglia…',giocatori:'Recupero i nomi dei proprietari…'};
 const mmss=n=>{n=Math.max(0,Math.round(n));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
 function renderLoader(){
   $('sync').disabled=busy;$('resume').disabled=busy;
   $('msg').innerHTML=(S.error?`<span class="err">${esc(S.error)}</span>`:'')+(S.warning?`<span class="warn">${esc(S.warning)}</span>`:'');
   let st=S.status;
-  if(busy)st=S.phase==='requisiti'?(limited()?`Scarico i requisiti di sistema: ${S.done}/${S.total} (pausa per il limite di Steam)`:`Scarico i requisiti di sistema: ${S.done}/${S.total}`):(PHT[S.phase]||'');
+  if(busy)st=S.phase==='requisiti'?(limited()?`Scarico i dettagli dei giochi: ${S.done}/${S.total} (pausa per il limite di Steam)`:`Scarico i dettagli dei giochi: ${S.done}/${S.total}`):(PHT[S.phase]||'');
   $('status').textContent=st;
   $('loader').hidden=!S.phase;
   if(!S.phase)return;
@@ -321,14 +432,18 @@ function renderLoader(){
 /* ---------- esportazione JSON per le AI ---------- */
 function exportText(){
   const {rows,build,myRam}=compute();
-  const filtri={};['q','scope','owner','hmin','hmax','fit','sort'].forEach(i=>{const v=$(i).value.trim();if(v)filtri[i]=v});
+  const filtri={};
+  ['q','scope','owner','hmin','hmax','last','genre','mode','ctrl','sort'].forEach(i=>{const v=$(i).value.trim();if(v&&v!=='all')filtri[i]=v});
+  filtri.compatibilita=FITS.filter(k=>$('fit_'+k).checked);
   return JSON.stringify({
-    descrizione:'Libreria Steam (personale + famiglia) con requisiti di sistema. punteggio_esigenza = punteggio GPU (RX 7800 XT = 100) + 0.5*punteggio CPU (Ryzen 7 7700 = 100) + 1.5*RAM_GB; è confrontabile con pc.punteggio_build, calcolato allo stesso modo. compatibilita: ok / limit / no / unknown rispetto al PC indicato; limite_da indica il componente che pesa di più.',
+    descrizione:'Libreria Steam (personale + famiglia) con requisiti di sistema. punteggio_esigenza = punteggio GPU (RX 7800 XT = 100) + 0.5*punteggio CPU (Ryzen 7 7700 = 100) + 1.5*RAM_GB; è confrontabile con pc.punteggio_build, calcolato allo stesso modo. compatibilita: ok / limit / no / unknown rispetto al PC indicato; limite_da indica il componente che pesa di più. funzioni: single, multi, coop, online_coop, local_coop, pvp, controller, controller_partial.',
     pc:{cpu:clean($('cpu').value),cpu_riconosciuta:PC.cpu_label||null,cpu_punteggio_relativo:PC.cpu_score??null,
         gpu:clean($('gpu').value),gpu_riconosciuta:PC.gpu_label||null,gpu_punteggio_relativo:PC.gpu_score??null,
         ram_gb:myRam,punteggio_build:build},
     filtri,totale:rows.length,
-    giochi:rows.map(r=>({appid:r.appid,nome:r.name,mio:r.mine,in_famiglia:r.family,ore_giocate:r.hours,proprietari:r.owners,tipo:r.type,
+    giochi:rows.map(r=>({appid:r.appid,nome:r.name,mio:r.mine,in_famiglia:r.family,ore_giocate:r.hours,
+      mai_giocato:!r.played,ultimo_avvio:r.last?new Date(r.last*1000).toISOString().slice(0,10):null,
+      proprietari:r.owners,tipo:r.type,generi:r.genres,funzioni:r.tags,
       gpu_richiesta:r.gpu,cpu_richiesta:r.cpu,limite_da:r.why,ram_gb_richiesta:r.ram,spazio_gb:r.storage,
       punteggio_esigenza:r.demand,compatibilita:r.fit,requisiti_minimi:r.req_min,requisiti_consigliati:r.req_rec,
       url:'https://store.steampowered.com/app/'+r.appid}))
@@ -344,6 +459,7 @@ $('wipe').onclick=async()=>{
   await dbClear();
   FIELDS.forEach(f=>$(f).value='');
   lib=null;details={};PC={};S={phase:'',status:'Dati cancellati.'};
+  $('pickbox').hidden=true;
   render();renderLoader();
 };
 
@@ -352,7 +468,10 @@ $('wipe').onclick=async()=>{
   loadSettings();
   try{lib=(await dbGet('library'))||null;details=(await dbGet('details'))||{}}catch(e){}
   try{PC=JSON.parse(localStorage.getItem(PCK)||'{}')}catch(e){PC={}}
-  S.status=lib?`Libreria caricata dal browser: ${lib.games.length} giochi (ultimo sync: ${lib.syncedAt}).`:'Inserisci i tuoi dati e premi Sincronizza.';
+  if(lib){
+    S.status=`Libreria caricata dal browser: ${lib.games.length} giochi (ultimo sync: ${lib.syncedAt}).`;
+    if(lib.games.some(g=>g.mine&&g.last===undefined))S.status+=' Premi Sincronizza per vedere anche la data di ultimo avvio.';
+  }else S.status='Inserisci i tuoi dati e premi Sincronizza.';
   if((PC.forGpu||'')!==clean($('gpu').value)||(PC.forCpu||'')!==clean($('cpu').value))refreshPC();
   render();renderLoader();
 })();
